@@ -28,7 +28,6 @@ export default function HomePage() {
     setImagePreview(null)
     setError(null)
     sessionStorage.removeItem('pending_image')
-    sessionStorage.removeItem('pending_image_preview')
     sessionStorage.removeItem('pending_mime_type')
   }
 
@@ -41,9 +40,13 @@ export default function HomePage() {
     setError(null)
 
     // Store image in sessionStorage so it survives the checkout redirect
-    sessionStorage.setItem('pending_image', imageBase64)
-    sessionStorage.setItem('pending_mime_type', imageMimeType)
-    sessionStorage.setItem('pending_image_preview', imagePreview ?? '')
+    try {
+      sessionStorage.setItem('pending_image', imageBase64)
+      sessionStorage.setItem('pending_mime_type', imageMimeType)
+    } catch {
+      setError('Your photo is too large to process. Please try a smaller image.')
+      return
+    }
 
     const result = await createCheckout({
       type: 'AMOUNT',
@@ -57,7 +60,6 @@ export default function HomePage() {
     if (result.error) {
       sessionStorage.removeItem('pending_image')
       sessionStorage.removeItem('pending_mime_type')
-      sessionStorage.removeItem('pending_image_preview')
       setError(result.error.message)
       return
     }

@@ -18,15 +18,38 @@ export function PhotoUpload({ onImageReady, onClear, preview, disabled }: PhotoU
   const processFile = useCallback(
     (file: File) => {
       if (!file.type.startsWith('image/')) return
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string
-        // dataUrl = "data:<mimeType>;base64,<data>"
-        const [meta, base64] = dataUrl.split(',')
-        const mimeType = meta.replace('data:', '').replace(';base64', '')
-        onImageReady(base64, mimeType, dataUrl)
+      const src = URL.createObjectURL(file)
+      const img = new Image()
+      img.onload = () => {
+        const MAX = 1024
+        let w = img.naturalWidth
+        let h = img.naturalHeight
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round((h * MAX) / w); w = MAX }
+          else       { w = Math.round((w * MAX) / h); h = MAX }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
+        URL.revokeObjectURL(src)
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return
+            const reader = new FileReader()
+            reader.onload = (e) => {
+              const dataUrl = e.target?.result as string
+              const [meta, base64] = dataUrl.split(',')
+              const mimeType = meta.replace('data:', '').replace(';base64', '')
+              onImageReady(base64, mimeType, dataUrl)
+            }
+            reader.readAsDataURL(blob)
+          },
+          'image/jpeg',
+          0.82
+        )
       }
-      reader.readAsDataURL(file)
+      img.src = src
     },
     [onImageReady]
   )
