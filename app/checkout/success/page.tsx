@@ -35,7 +35,7 @@ export default function SuccessPage() {
 
     const imageBase64 = sessionStorage.getItem('pending_image')
     const mimeType = sessionStorage.getItem('pending_mime_type') ?? 'image/jpeg'
-    const preview = sessionStorage.getItem('pending_image_preview') ?? null
+    const preview = imageBase64 ? `data:${mimeType};base64,${imageBase64}` : null
 
     if (!imageBase64) {
       setPageState({ status: 'error', message: 'Image data not found. Please go back and try again.' })
@@ -58,7 +58,6 @@ export default function SuccessPage() {
         // Clear image from sessionStorage after successful analysis
         sessionStorage.removeItem('pending_image')
         sessionStorage.removeItem('pending_mime_type')
-        sessionStorage.removeItem('pending_image_preview')
         setPageState({ status: 'done', locations: data.locations, preview })
       })
       .catch((err: Error) => {
