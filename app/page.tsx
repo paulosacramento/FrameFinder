@@ -51,7 +51,7 @@ export default function HomePage() {
     const result = await createCheckout({
       type: 'AMOUNT',
       title: 'GeoLocator — AI Photo Analysis',
-      description: 'AI-powered geolocation analysis of your photo using Gemini 2.5 Flash',
+      description: 'AI-powered geolocation analysis of your photo using Gemini 3.1 Flash Lite Preview',
       amount: 100,
       currency: 'SAT',
       successUrl: '/checkout/success',
@@ -131,7 +131,7 @@ export default function HomePage() {
           {[
             { icon: Lock, title: 'Private', desc: 'Images never stored on our servers' },
             { icon: Zap, title: 'Lightning fast', desc: 'Instant payment, instant results' },
-            { icon: Globe, title: 'Powered by Gemini', desc: 'Google Gemini 2.5 Flash' },
+            { icon: Globe, title: 'Powered by Gemini', desc: 'Google Gemini 3.1 Flash Lite Preview' },
           ].map(({ icon: Icon, title, desc }) => (
             <Card key={title} className="bg-muted/30">
               <CardContent className="p-4 space-y-1">
