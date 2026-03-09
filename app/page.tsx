@@ -50,7 +50,7 @@ export default function HomePage() {
 
     const result = await createCheckout({
       type: 'AMOUNT',
-      title: 'GeoLocator — AI Photo Analysis',
+      title: 'FrameFinder — AI Photo Analysis',
       description: 'AI-powered geolocation analysis of your photo using Gemini 3.1 Flash Lite Preview',
       amount: 100,
       currency: 'SAT',
@@ -74,7 +74,7 @@ export default function HomePage() {
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Satellite className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-base">GeoLocator</span>
+            <span className="font-semibold text-base">FrameFinder</span>
             <Badge variant="outline" className="text-xs hidden sm:inline-flex">AI</Badge>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

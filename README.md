@@ -1,4 +1,4 @@
-# GeoLocator — AI-Powered Photo Geolocation
+# FrameFinder — AI-Powered Photo Geolocation
 
 Upload a photo, pay **100 sats** via Lightning Network, and Gemini 2.5 Flash identifies the **top 3 most likely locations** the photo was taken.
 
@@ -16,7 +16,7 @@ Upload a photo, pay **100 sats** via Lightning Network, and Gemini 2.5 Flash ide
 
 ```bash
 git clone <repo>
-cd mdk
+cd FrameFinder
 npm install
 ```
 
