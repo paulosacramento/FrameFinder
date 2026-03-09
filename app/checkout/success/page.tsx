@@ -71,7 +71,7 @@ export default function SuccessPage() {
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center gap-2">
           <Satellite className="h-5 w-5 text-primary" />
-          <span className="font-semibold text-base">GeoLocator</span>
+          <span className="font-semibold text-base">FrameFinder</span>
         </div>
       </header>
 
