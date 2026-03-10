@@ -52,7 +52,7 @@ export default function HomePage() {
       type: 'AMOUNT',
       title: 'FrameFinder — AI Photo Analysis',
       description: 'AI-powered geolocation analysis of your photo using Gemini 3.1 Flash Lite Preview',
-      amount: 100,
+      amount: 10, // temporary: reduced for testing (production value: 100)
       currency: 'SAT',
       successUrl: '/checkout/success',
     })
