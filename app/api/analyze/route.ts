@@ -22,9 +22,9 @@ export async function POST(req: NextRequest) {
         maxOutputTokens: 1024,
         candidateCount: 1,
         responseMimeType: 'application/json',
-        mediaResolution: 'HIGH' as any,
-        thinkingConfig: { thinkingBudget: -1 } as any,
-      },
+        mediaResolution: 'HIGH',
+        thinkingConfig: { thinkingBudget: -1 },
+      } as any,
     })
 
     const result = await model.generateContent([
