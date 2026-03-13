@@ -15,16 +15,6 @@ export async function POST(req: NextRequest) {
     const model = genAI.getGenerativeModel({
       model: 'gemini-3.1-flash-lite-preview',
       systemInstruction: SYSTEM_PROMPT,
-      generationConfig: {
-        temperature: 0,
-        topP: 1,
-        topK: 1,
-        maxOutputTokens: 1024,
-        candidateCount: 1,
-        responseMimeType: 'application/json',
-        mediaResolution: 'HIGH',
-        thinkingConfig: { thinkingBudget: -1 },
-      } as any,
     })
 
     const result = await model.generateContent([
@@ -37,7 +27,11 @@ export async function POST(req: NextRequest) {
       'Analyze this photograph and return the JSON as instructed.',
     ])
 
-    const parsed = JSON.parse(result.response.text())
+    const text = result.response.text().trim()
+
+    // Strip markdown code fences if present
+    const clean = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
+    const parsed = JSON.parse(clean)
 
     return NextResponse.json(parsed)
   } catch (err: unknown) {
