@@ -1,6 +1,7 @@
 'use client'
 
 import { MapPin } from 'lucide-react'
+import { ImagePreview } from '@/components/ImagePreview'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -17,6 +18,7 @@ export interface Location {
 interface AnalysisResultsProps {
   locations: Location[]
   imagePreview: string | null
+  imageFileName?: string | null
 }
 
 const CONFIDENCE_CONFIG: Record<
@@ -32,14 +34,16 @@ const CONFIDENCE_CONFIG: Record<
 
 const RANK_LABELS = ['#1 Most Likely', '#2', '#3']
 
-export function AnalysisResults({ locations, imagePreview }: AnalysisResultsProps) {
+export function AnalysisResults({ locations, imagePreview, imageFileName }: AnalysisResultsProps) {
   return (
     <div className="space-y-6">
       {imagePreview && (
-        <div className="rounded-xl overflow-hidden border max-h-64 flex items-center justify-center bg-black/5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imagePreview} alt="Analyzed photo" className="max-h-64 object-contain" />
-        </div>
+        <ImagePreview
+          src={imagePreview}
+          alt="Analyzed photo"
+          fileName={imageFileName}
+          size="sm"
+        />
       )}
 
       <div>

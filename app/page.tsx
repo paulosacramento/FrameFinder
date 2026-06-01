@@ -18,14 +18,16 @@ export default function HomePage() {
   const [imageBase64, setImageBase64] = useState<string | null>(null)
   const [imageMimeType, setImageMimeType] = useState<string>('image/jpeg')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageFileName, setImageFileName] = useState<string | null>(null)
   const [pageState, setPageState] = useState<PageState>({ status: 'idle' })
 
   const isAnalyzing = pageState.status === 'analyzing'
 
-  const handleImageReady = (base64: string, mimeType: string, preview: string) => {
+  const handleImageReady = (base64: string, mimeType: string, preview: string, fileName: string) => {
     setImageBase64(base64)
     setImageMimeType(mimeType)
     setImagePreview(preview)
+    setImageFileName(fileName)
     if (pageState.status === 'error') {
       setPageState({ status: 'idle' })
     }
@@ -35,6 +37,7 @@ export default function HomePage() {
     setImageBase64(null)
     setImageMimeType('image/jpeg')
     setImagePreview(null)
+    setImageFileName(null)
     setPageState({ status: 'idle' })
   }
 
@@ -75,7 +78,11 @@ export default function HomePage() {
           </div>
         </header>
         <main className="max-w-3xl mx-auto px-4 py-10 space-y-8">
-          <AnalysisResults locations={pageState.locations} imagePreview={imagePreview} />
+          <AnalysisResults
+            locations={pageState.locations}
+            imagePreview={imagePreview}
+            imageFileName={imageFileName}
+          />
           <Button variant="outline" className="w-full" onClick={handleAnalyzeAnother}>
             Analyze another photo
           </Button>
@@ -115,6 +122,7 @@ export default function HomePage() {
           onImageReady={handleImageReady}
           onClear={handleClear}
           preview={imagePreview}
+          fileName={imageFileName}
           disabled={isAnalyzing}
         />
 

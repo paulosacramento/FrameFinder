@@ -1,18 +1,20 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { Upload, ImageIcon, X } from 'lucide-react'
+import { Upload, ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ImagePreview } from '@/components/ImagePreview'
 import { cn } from '@/lib/utils'
 
 interface PhotoUploadProps {
-  onImageReady: (base64: string, mimeType: string, preview: string) => void
+  onImageReady: (base64: string, mimeType: string, preview: string, fileName: string) => void
   onClear: () => void
   preview: string | null
+  fileName?: string | null
   disabled?: boolean
 }
 
-export function PhotoUpload({ onImageReady, onClear, preview, disabled }: PhotoUploadProps) {
+export function PhotoUpload({ onImageReady, onClear, preview, fileName, disabled }: PhotoUploadProps) {
   const [dragging, setDragging] = useState(false)
 
   const processFile = useCallback(
@@ -41,7 +43,7 @@ export function PhotoUpload({ onImageReady, onClear, preview, disabled }: PhotoU
               const dataUrl = e.target?.result as string
               const [meta, base64] = dataUrl.split(',')
               const mimeType = meta.replace('data:', '').replace(';base64', '')
-              onImageReady(base64, mimeType, dataUrl)
+              onImageReady(base64, mimeType, dataUrl, file.name)
             }
             reader.readAsDataURL(blob)
           },
@@ -71,23 +73,12 @@ export function PhotoUpload({ onImageReady, onClear, preview, disabled }: PhotoU
 
   if (preview) {
     return (
-      <div className="relative rounded-xl overflow-hidden border bg-card">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={preview}
-          alt="Uploaded photo"
-          className="w-full max-h-96 object-contain bg-black/5"
-        />
-        {!disabled && (
-          <button
-            onClick={onClear}
-            className="absolute top-2 right-2 bg-background/80 hover:bg-background rounded-full p-1 shadow transition-colors"
-            aria-label="Remove image"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+      <ImagePreview
+        src={preview}
+        alt="Uploaded photo"
+        fileName={fileName}
+        onClear={disabled ? undefined : onClear}
+      />
     )
   }
 
