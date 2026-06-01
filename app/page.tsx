@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Globe, Lock, Sparkles } from 'lucide-react'
 import { AppHeader } from '@/components/AppHeader'
 import { AnalyzingStatus } from '@/components/AnalyzingStatus'
@@ -23,6 +23,8 @@ export default function HomePage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageFileName, setImageFileName] = useState<string | null>(null)
   const [pageState, setPageState] = useState<PageState>({ status: 'idle' })
+  const analysisAbortRef = useRef<AbortController | null>(null)
+  const analysisRequestIdRef = useRef(0)
 
   const isAnalyzing = pageState.status === 'analyzing'
   const isDone = pageState.status === 'done'
@@ -33,6 +35,21 @@ export default function HomePage() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }, [isDone])
+
+  useEffect(() => {
+    return () => {
+      analysisAbortRef.current?.abort()
+    }
+  }, [])
+
+  const cancelAnalysis = () => {
+    analysisAbortRef.current?.abort()
+    analysisAbortRef.current = null
+    analysisRequestIdRef.current += 1
+  }
+
+  const isAbortError = (err: unknown) =>
+    err instanceof DOMException && err.name === 'AbortError'
 
   const handleImageReady = (base64: string, mimeType: string, preview: string, fileName: string) => {
     setImageBase64(base64)
@@ -45,6 +62,7 @@ export default function HomePage() {
   }
 
   const handleClear = () => {
+    cancelAnalysis()
     setImageBase64(null)
     setImageMimeType('image/jpeg')
     setImagePreview(null)
@@ -58,6 +76,11 @@ export default function HomePage() {
       return
     }
 
+    cancelAnalysis()
+    const controller = new AbortController()
+    analysisAbortRef.current = controller
+    const requestId = analysisRequestIdRef.current
+
     setPageState({ status: 'analyzing' })
 
     try {
@@ -65,13 +88,22 @@ export default function HomePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageBase64, mimeType: imageMimeType }),
+        signal: controller.signal,
       })
+      if (requestId !== analysisRequestIdRef.current) return
+
       const data = await res.json()
+      if (requestId !== analysisRequestIdRef.current) return
       if (!res.ok) throw new Error(data.error ?? 'Analysis failed')
       setPageState({ status: 'done', locations: data.locations })
     } catch (err) {
+      if (requestId !== analysisRequestIdRef.current || isAbortError(err)) return
       const message = err instanceof Error ? err.message : 'Analysis failed'
       setPageState({ status: 'error', message })
+    } finally {
+      if (analysisAbortRef.current === controller) {
+        analysisAbortRef.current = null
+      }
     }
   }
 
