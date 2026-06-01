@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Globe, Lock, Loader2, Satellite, Sparkles } from 'lucide-react'
+import { Globe, Lock, Loader2, Sparkles } from 'lucide-react'
+import { AppHeader } from '@/components/AppHeader'
 import { PhotoUpload } from '@/components/PhotoUpload'
 import { AnalysisResults, type Location } from '@/components/AnalysisResults'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 
 type PageState =
   | { status: 'idle' }
@@ -71,12 +71,7 @@ export default function HomePage() {
   if (pageState.status === 'done') {
     return (
       <div className="min-h-screen bg-background">
-        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-          <div className="max-w-3xl mx-auto px-4 h-14 flex items-center gap-2">
-            <Satellite className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-base">FrameFinder</span>
-          </div>
-        </header>
+        <AppHeader onHomeClick={handleClear} />
         <main className="max-w-3xl mx-auto px-4 py-10 space-y-8">
           <AnalysisResults
             locations={pageState.locations}
@@ -93,16 +88,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Satellite className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-base">FrameFinder</span>
-            <Badge variant="outline" className="text-xs hidden sm:inline-flex">AI</Badge>
-          </div>
-        </div>
-      </header>
-
+      <AppHeader onHomeClick={handleClear} showAiBadge />
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-8">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
