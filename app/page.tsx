@@ -1,75 +1,91 @@
 'use client'
 
 import { useState } from 'react'
-import { useCheckout } from '@moneydevkit/nextjs'
-import { Zap, Globe, Lock, Satellite } from 'lucide-react'
+import { Globe, Lock, Loader2, Satellite, Sparkles } from 'lucide-react'
 import { PhotoUpload } from '@/components/PhotoUpload'
+import { AnalysisResults, type Location } from '@/components/AnalysisResults'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
+type PageState =
+  | { status: 'idle' }
+  | { status: 'analyzing' }
+  | { status: 'done'; locations: Location[] }
+  | { status: 'error'; message: string }
+
 export default function HomePage() {
-  const { createCheckout, isLoading } = useCheckout()
   const [imageBase64, setImageBase64] = useState<string | null>(null)
   const [imageMimeType, setImageMimeType] = useState<string>('image/jpeg')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [pageState, setPageState] = useState<PageState>({ status: 'idle' })
+
+  const isAnalyzing = pageState.status === 'analyzing'
 
   const handleImageReady = (base64: string, mimeType: string, preview: string) => {
     setImageBase64(base64)
     setImageMimeType(mimeType)
     setImagePreview(preview)
-    setError(null)
+    if (pageState.status === 'error') {
+      setPageState({ status: 'idle' })
+    }
   }
 
   const handleClear = () => {
     setImageBase64(null)
     setImageMimeType('image/jpeg')
     setImagePreview(null)
-    setError(null)
-    sessionStorage.removeItem('pending_image')
-    sessionStorage.removeItem('pending_mime_type')
+    setPageState({ status: 'idle' })
   }
 
   const handleAnalyze = async () => {
     if (!imageBase64) {
-      setError('Please upload a photo first.')
+      setPageState({ status: 'error', message: 'Please upload a photo first.' })
       return
     }
 
-    setError(null)
+    setPageState({ status: 'analyzing' })
 
-    // Store image in sessionStorage so it survives the checkout redirect
     try {
-      sessionStorage.setItem('pending_image', imageBase64)
-      sessionStorage.setItem('pending_mime_type', imageMimeType)
-    } catch {
-      setError('Your photo is too large to process. Please try a smaller image.')
-      return
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageBase64, mimeType: imageMimeType }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Analysis failed')
+      setPageState({ status: 'done', locations: data.locations })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Analysis failed'
+      setPageState({ status: 'error', message })
     }
+  }
 
-    const result = await createCheckout({
-      type: 'AMOUNT',
-      title: 'FrameFinder — AI Photo Analysis',
-      description: 'AI-powered geolocation analysis of your photo using Gemini 3.1 Flash Lite Preview',
-      amount: 10, // temporary: reduced for testing (production value: 100)
-      currency: 'SAT',
-      successUrl: '/checkout/success',
-    })
+  const handleAnalyzeAnother = () => {
+    handleClear()
+  }
 
-    if (result.error) {
-      sessionStorage.removeItem('pending_image')
-      sessionStorage.removeItem('pending_mime_type')
-      setError(result.error.message)
-      return
-    }
-
-    window.location.href = result.data.checkoutUrl
+  if (pageState.status === 'done') {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+          <div className="max-w-3xl mx-auto px-4 h-14 flex items-center gap-2">
+            <Satellite className="h-5 w-5 text-primary" />
+            <span className="font-semibold text-base">FrameFinder</span>
+          </div>
+        </header>
+        <main className="max-w-3xl mx-auto px-4 py-10 space-y-8">
+          <AnalysisResults locations={pageState.locations} imagePreview={imagePreview} />
+          <Button variant="outline" className="w-full" onClick={handleAnalyzeAnother}>
+            Analyze another photo
+          </Button>
+        </main>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -77,15 +93,10 @@ export default function HomePage() {
             <span className="font-semibold text-base">FrameFinder</span>
             <Badge variant="outline" className="text-xs hidden sm:inline-flex">AI</Badge>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Zap className="h-3.5 w-3.5 text-amber-500" />
-            <span>100 sats per analysis</span>
-          </div>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-8">
-        {/* Hero */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
             <Globe className="h-4 w-4" />
@@ -100,37 +111,48 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Upload */}
         <PhotoUpload
           onImageReady={handleImageReady}
           onClear={handleClear}
           preview={imagePreview}
-          disabled={isLoading}
+          disabled={isAnalyzing}
         />
 
-        {/* Error */}
-        {error && (
+        {pageState.status === 'error' && (
           <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
-            {error}
+            {pageState.message}
           </div>
         )}
 
-        {/* CTA */}
         <Button
           onClick={handleAnalyze}
-          disabled={!imageBase64 || isLoading}
+          disabled={!imageBase64 || isAnalyzing}
           size="lg"
           className="w-full gap-2 text-base"
         >
-          <Zap className="h-5 w-5" />
-          {isLoading ? 'Creating invoice…' : 'Analyze for 100 sats'}
+          {isAnalyzing ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Analyzing your photo…
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-5 w-5" />
+              Analyze photo
+            </>
+          )}
         </Button>
 
-        {/* Trust row */}
+        {isAnalyzing && (
+          <p className="text-sm text-muted-foreground text-center">
+            Gemini is scanning for geospatial clues. This can take up to 30 seconds.
+          </p>
+        )}
+
         <div className="grid grid-cols-3 gap-3 text-center">
           {[
             { icon: Lock, title: 'Private', desc: 'Images never stored on our servers' },
-            { icon: Zap, title: 'Lightning fast', desc: 'Instant payment, instant results' },
+            { icon: Sparkles, title: 'Fast results', desc: 'Analysis in seconds' },
             { icon: Globe, title: 'Powered by Gemini', desc: 'Google Gemini 3.1 Flash Lite Preview' },
           ].map(({ icon: Icon, title, desc }) => (
             <Card key={title} className="bg-muted/30">

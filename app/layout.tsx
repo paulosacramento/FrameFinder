@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
-import '@moneydevkit/nextjs/mdk-styles.css'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: 'FrameFinder — AI Photo Geolocation',
   description:
-    'Upload a photo and AI identifies the top 3 most likely locations it was taken. Powered by Google Gemini 3.1 Flash Lite Preview. Pay 100 sats via Lightning.',
+    'Upload a photo and AI identifies the top 3 most likely locations it was taken. Powered by Google Gemini 3.1 Flash Lite Preview.',
 }
 
 export default function RootLayout({
