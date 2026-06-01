@@ -3,18 +3,14 @@
 import { useCallback, useState } from 'react'
 import { Upload, ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ImagePreview } from '@/components/ImagePreview'
 import { cn } from '@/lib/utils'
 
 interface PhotoUploadProps {
   onImageReady: (base64: string, mimeType: string, preview: string, fileName: string) => void
-  onClear: () => void
-  preview: string | null
-  fileName?: string | null
   disabled?: boolean
 }
 
-export function PhotoUpload({ onImageReady, onClear, preview, fileName, disabled }: PhotoUploadProps) {
+export function PhotoUpload({ onImageReady, disabled }: PhotoUploadProps) {
   const [dragging, setDragging] = useState(false)
 
   const processFile = useCallback(
@@ -71,17 +67,6 @@ export function PhotoUpload({ onImageReady, onClear, preview, fileName, disabled
     if (file) processFile(file)
   }
 
-  if (preview) {
-    return (
-      <ImagePreview
-        src={preview}
-        alt="Uploaded photo"
-        fileName={fileName}
-        onClear={disabled ? undefined : onClear}
-      />
-    )
-  }
-
   return (
     <div
       onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
@@ -89,17 +74,19 @@ export function PhotoUpload({ onImageReady, onClear, preview, fileName, disabled
       onDrop={handleDrop}
       className={cn(
         'relative flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-12 text-center transition-colors cursor-pointer',
+        disabled && 'pointer-events-none opacity-50',
         dragging
           ? 'border-primary bg-primary/5'
           : 'border-border hover:border-primary/50 hover:bg-muted/30'
       )}
-      onClick={() => document.getElementById('photo-input')?.click()}
+      onClick={() => !disabled && document.getElementById('photo-input')?.click()}
     >
       <input
         id="photo-input"
         type="file"
         accept="image/*"
         className="hidden"
+        disabled={disabled}
         onChange={handleFileChange}
       />
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
@@ -117,7 +104,7 @@ export function PhotoUpload({ onImageReady, onClear, preview, fileName, disabled
           Drag & drop or click to browse · JPG, PNG, WEBP
         </p>
       </div>
-      <Button variant="outline" size="sm" type="button" tabIndex={-1}>
+      <Button variant="outline" size="sm" type="button" tabIndex={-1} disabled={disabled}>
         Choose file
       </Button>
     </div>
