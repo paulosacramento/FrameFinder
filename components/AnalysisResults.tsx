@@ -1,9 +1,11 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { MapPin } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
 
 export interface Location {
   location: string
@@ -16,7 +18,6 @@ export interface Location {
 
 interface AnalysisResultsProps {
   locations: Location[]
-  imagePreview: string | null
 }
 
 const CONFIDENCE_CONFIG: Record<
@@ -32,16 +33,29 @@ const CONFIDENCE_CONFIG: Record<
 
 const RANK_LABELS = ['#1 Most Likely', '#2', '#3']
 
-export function AnalysisResults({ locations, imagePreview }: AnalysisResultsProps) {
-  return (
-    <div className="space-y-6">
-      {imagePreview && (
-        <div className="rounded-xl overflow-hidden border max-h-64 flex items-center justify-center bg-black/5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imagePreview} alt="Analyzed photo" className="max-h-64 object-contain" />
-        </div>
-      )}
+function ConfidenceBar({ barClass }: { barClass: string }) {
+  const [animate, setAnimate] = useState(false)
 
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setAnimate(true))
+    return () => cancelAnimationFrame(frame)
+  }, [])
+
+  return (
+    <div className="mt-3 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+      <div
+        className={cn(
+          'h-full rounded-full transition-all duration-700 ease-out',
+          animate ? barClass : 'w-0'
+        )}
+      />
+    </div>
+  )
+}
+
+export function AnalysisResults({ locations }: AnalysisResultsProps) {
+  return (
+    <div className="space-y-6 animate-fade-in-up">
       <div>
         <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
           <MapPin className="h-5 w-5 text-primary" />
@@ -52,7 +66,14 @@ export function AnalysisResults({ locations, imagePreview }: AnalysisResultsProp
           {locations.map((loc, i) => {
             const conf = CONFIDENCE_CONFIG[loc.confidence] ?? CONFIDENCE_CONFIG['Very Low']
             return (
-              <Card key={i} className={i === 0 ? 'ring-2 ring-primary/20' : ''}>
+              <Card
+                key={i}
+                className={cn(
+                  'animate-fade-in-up',
+                  i === 0 ? 'ring-2 ring-primary/20' : ''
+                )}
+                style={{ animationDelay: `${150 + i * 120}ms` }}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -66,10 +87,7 @@ export function AnalysisResults({ locations, imagePreview }: AnalysisResultsProp
                     </Badge>
                   </div>
 
-                  {/* Confidence bar */}
-                  <div className="mt-3 h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${conf.bar}`} />
-                  </div>
+                  <ConfidenceBar barClass={conf.bar} />
                 </CardHeader>
 
                 <Separator />
