@@ -1,6 +1,7 @@
 'use client'
 
 import { X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 interface ImagePreviewProps {
@@ -22,18 +23,21 @@ export function ImagePreview({
 
   return (
     <div className="relative rounded-xl overflow-hidden border bg-card">
-      <div className={cn('flex items-center justify-center bg-black/5', maxH)}>
+      <div className={cn('relative flex items-center justify-center bg-black/5', maxH)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} className={cn('w-full object-contain', maxH)} />
+        {fileName && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)]">
+            <Badge
+              variant="secondary"
+              className="max-w-full truncate bg-background/90 backdrop-blur-sm shadow-sm"
+              title={fileName}
+            >
+              {fileName}
+            </Badge>
+          </div>
+        )}
       </div>
-      {fileName && (
-        <p
-          className="px-3 py-2 text-sm text-muted-foreground truncate border-t bg-card"
-          title={fileName}
-        >
-          {fileName}
-        </p>
-      )}
       {onClear && (
         <button
           onClick={onClear}
